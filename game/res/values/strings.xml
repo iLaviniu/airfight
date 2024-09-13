@@ -1,0 +1,51 @@
+<resources>
+
+    <string name="app_name">Airfight</string>
+
+    <string name="MAP_ROWS">12</string>
+    <string name="MAP_COLUMNS">24</string>
+
+    <string name="RIGHT">RIGHT</string>
+    <string name="LEFT">LEFT</string>
+    <string name="UP">UP</string>
+    <string name="DOWN">DOWN</string>
+
+    <string name="DEGREE_0">DEGREE_0</string>
+    <string name="DEGREE_90">DEGREE_90</string>
+    <string name="DEGREE_180">DEGREE_180</string>
+    <string name="DEGREE_270">DEGREE_270</string>
+
+    <string name="AIRPLANES_FLEET">3</string>
+
+    <string name="MENU_ACTIVITY">MENU_ACTIVITY</string>
+    <string name="FLEET_STRATEGY_ACTIVITY">FLEET_STRATEGY_ACTIVITY</string>
+    <string name="CREDITS_ACTIVITY">CREDITS_ACTIVITY</string>
+    <string name="BUILD_ACTIVITY">BUILD_ACTIVITY</string>
+    <string name="MODE_ACTIVITY">MODE_ACTIVITY</string>
+    <string name="ENEMY_FIELD_ACTIVITY">ENEMY_FIELD_ACTIVITY</string>
+    <string name="MY_FIELD_ACTIVITY">MY_FIELD_ACTIVITY</string>
+    <string name="RESULTS_ACTIVITY">RESULTS_ACTIVITY</string>
+
+
+    <string name="FLEET">FLEET</string>
+    <string name="BUILD">BUILD</string>
+    <string name="MODE">MODE</string>
+    <string name="LEAVE">LEAVE</string>
+    <string name="CREDITS">CREDITS</string>
+
+    <string name="EASY">EASY</string>
+    <string name="MEDIUM">MEDIUM</string>
+    <string name="HARD">HARD</string>
+
+    <string name="CREDIT1">Stock Tune</string>
+    <string name="CREDIT2">Pixabay</string>
+    <string name="CREDIT3">Hotpot.ai</string>
+    <string name="CREDIT4">Freepik</string>
+    <string name="CREDIT5">Icons8</string>
+
+
+    <string name="MY_FLEET">MY_FLEET</string>
+    <string name="ENEMY_FLEET">ENEMY_FLEET</string>
+
+
+</resources>

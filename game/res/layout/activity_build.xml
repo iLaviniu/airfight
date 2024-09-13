@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000"
+    tools:context=".frontend.BuildActivity">
+
+    <RelativeLayout
+        android:id="@+id/buildLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        android:background="@drawable/rounded_layout">
+
+        <LinearLayout
+            android:id="@+id/leftControls"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
+            android:orientation="vertical"
+            android:layout_alignParentStart="true">
+
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/empty_full_white"
+                android:layout_weight="1"
+                android:soundEffectsEnabled="false"
+                />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/up_button_gray"
+                android:layout_weight="1"
+                android:onClick="onClickUp"
+                android:soundEffectsEnabled="false"
+                />
+
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/buildPlatform"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="60dp"
+            android:layout_marginEnd="60dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="#FFFFFF"
+            android:soundEffectsEnabled="false">
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/rightControls"
+            android:layout_width="50dp"
+            android:layout_margin="5dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_alignParentEnd="true">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/square_back_button_gray"
+                android:layout_weight="1"
+                android:onClick="onClickBackButton"
+                android:soundEffectsEnabled="false"
+                />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/down_button_gray"
+                android:layout_weight="1"
+                android:onClick="onClickDown"
+                android:soundEffectsEnabled="false"
+                />
+
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

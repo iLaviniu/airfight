@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000"
+    tools:context=".frontend.FleetStrategyActivity">
+
+
+    <RelativeLayout
+        android:id="@+id/playLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        android:background="@drawable/rounded_layout">
+
+        <LinearLayout
+            android:id="@+id/leftControls"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
+            android:orientation="vertical"
+            android:layout_alignParentStart="true">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/add_airplane_gray"
+                android:layout_weight="1"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:onClick="onClickAddAirplane"
+                android:soundEffectsEnabled="false"
+                />
+
+            <ImageView
+                android:id="@+id/airplaneSelector"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="onClickAirplaneSelector"
+                android:soundEffectsEnabled="false"
+                />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/up_button_gray"
+                android:layout_weight="1"
+                android:onClick="onClickUp"
+                android:soundEffectsEnabled="false"
+                />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/down_button_gray"
+                android:layout_weight="1"
+                android:onClick="onClickDown"
+                android:soundEffectsEnabled="false"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/mapLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="60dp"
+            android:layout_marginEnd="60dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="#FFFFFF"
+            android:soundEffectsEnabled="false">
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/rightControls"
+            android:layout_width="50dp"
+            android:layout_margin="5dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_alignParentEnd="true">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ok_button_gray"
+                android:layout_weight="1"
+                android:onClick="onClickFleetStrategyDone"
+                android:soundEffectsEnabled="false"
+                />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/airplane_rotation_gray"
+                android:layout_weight="1"
+                android:onClick="onClickAirplaneRotation"
+                android:soundEffectsEnabled="false"
+                />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/left_button_gray"
+                android:layout_weight="1"
+                android:onClick="onClickLeft"
+                android:soundEffectsEnabled="false"
+                />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/right_button_gray"
+                android:layout_weight="1"
+                android:onClick="onClickRight"
+                android:soundEffectsEnabled="false"
+                />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>
