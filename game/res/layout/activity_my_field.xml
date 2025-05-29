@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#000000"
-    tools:context=".frontend.MyFieldActivity">
+    tools:context="com.game.airfight.frontend.MyFieldActivity">
 
     <RelativeLayout
         android:id="@+id/myFieldLayout"
@@ -27,6 +27,7 @@
 
 
             <ImageView
+                android:contentDescription="@string/myFleetSpanDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:src="@drawable/empty_full_white"
@@ -35,6 +36,7 @@
                 />
 
             <ImageView
+                android:contentDescription="@string/myFleetHeadsCount"
                 android:id="@+id/myFleetHeads"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -43,6 +45,7 @@
                 />
 
             <ImageView
+                android:contentDescription="@string/myFleetSpanDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:src="@drawable/empty_full_white"
@@ -77,9 +80,10 @@
             android:layout_alignParentEnd="true">
 
             <ImageView
+                android:contentDescription="@string/myFleetShotButton"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:src="@drawable/square_back_button_gray"
+                android:layout_height="0dp"
+                android:src="@drawable/accept_button"
                 android:layout_weight="1"
                 android:onClick="onClickBackButton"
                 android:soundEffectsEnabled="false"

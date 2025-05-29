@@ -12,7 +12,7 @@ public final class MenuMusicHandler {
 
     private static MediaPlayer mediaPlayer = null;
 
-    private static String nextActivity = null;
+    private static String nextActivity = "";
 
     private MenuMusicHandler() {
     }

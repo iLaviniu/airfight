@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#000000"
-    tools:context=".frontend.FleetStrategyActivity">
+    tools:context="com.game.airfight.frontend.FleetStrategyActivity">
 
 
     <RelativeLayout
@@ -27,9 +27,10 @@
             android:layout_alignParentStart="true">
 
             <ImageView
+                android:contentDescription="@string/airplaneDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/add_airplane_gray"
+                android:src="@drawable/airplane_button_black"
                 android:layout_weight="1"
                 android:paddingStart="2dp"
                 android:paddingEnd="2dp"
@@ -38,6 +39,7 @@
                 />
 
             <ImageView
+                android:contentDescription="@string/fleetCountDescription"
                 android:id="@+id/airplaneSelector"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -47,21 +49,25 @@
                 />
 
             <ImageView
+                android:contentDescription="@string/airplaneUpDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/up_button_gray"
+                android:src="@drawable/arrow_button"
                 android:layout_weight="1"
                 android:onClick="onClickUp"
                 android:soundEffectsEnabled="false"
+                android:rotation="90"
                 />
 
             <ImageView
+                android:contentDescription="@string/airplaneDownDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/down_button_gray"
+                android:src="@drawable/arrow_button"
                 android:layout_weight="1"
                 android:onClick="onClickDown"
                 android:soundEffectsEnabled="false"
+                android:rotation="270"
                 />
 
         </LinearLayout>
@@ -90,15 +96,17 @@
             android:layout_alignParentEnd="true">
 
             <ImageView
+                android:contentDescription="@string/fleetAcceptDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ok_button_gray"
+                android:src="@drawable/accept_button"
                 android:layout_weight="1"
                 android:onClick="onClickFleetStrategyDone"
                 android:soundEffectsEnabled="false"
                 />
 
             <ImageView
+                android:contentDescription="@string/airplaneRotateDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:src="@drawable/airplane_rotation_gray"
@@ -108,21 +116,24 @@
                 />
 
             <ImageView
+                android:contentDescription="@string/airplaneLeftDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/left_button_gray"
+                android:src="@drawable/arrow_button"
                 android:layout_weight="1"
                 android:onClick="onClickLeft"
                 android:soundEffectsEnabled="false"
                 />
 
             <ImageView
+                android:contentDescription="@string/airplaneRightDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/right_button_gray"
+                android:src="@drawable/arrow_button"
                 android:layout_weight="1"
                 android:onClick="onClickRight"
                 android:soundEffectsEnabled="false"
+                android:rotation="180"
                 />
 
         </LinearLayout>

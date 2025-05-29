@@ -42,6 +42,7 @@ public class MyAirplanesSingleton {
         myAirplanes.clear();
     }
 
+
     public ArrayList<Integer> getHeadsColumnsRanges(Context context) {
 
         ArrayList<Integer> columns = new ArrayList<>();

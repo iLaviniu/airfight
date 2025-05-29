@@ -7,8 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.media.AudioAttributes;
-import android.media.SoundPool;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -18,6 +17,8 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.game.airfight.backend.AirfightDataBase;
+import com.game.airfight.backend.SoundPoolSingleton;
 import com.game.profile.airfight.R;
 import com.game.airfight.backend.BackButtonOff;
 import com.game.airfight.backend.MenuField;
@@ -31,12 +32,11 @@ public class CreditsActivity extends AppCompatActivity {
 
     LinearLayout creditsTexts = null;
 
-    private SoundPool soundPool = null;
-
-    private int onClickSound = 0;
-
     private ArrayList<MenuField> credits = null;
 
+    private AirfightDataBase airfightDataBase = null;
+
+    private static BackButtonOff backButtonOff = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +44,7 @@ public class CreditsActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_credits);
 
-        new BackButtonOff(this);
+        backButtonOff = new BackButtonOff(this);
 
         MenuField credit1 = new MenuField(2, 2, 2,11);
         credit1.setText(getResources().getString(R.string.CREDIT1));
@@ -76,6 +76,8 @@ public class CreditsActivity extends AppCompatActivity {
 
         context = getBaseContext();
 
+        airfightDataBase = new AirfightDataBase(context);
+
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -95,17 +97,10 @@ public class CreditsActivity extends AppCompatActivity {
         creditsLayout.setLayoutParams(gameLayoutParams);
 
         creditsTexts = (LinearLayout)findViewById(R.id.creditsTexts);
-        creditsTexts.post(new Runnable()
-        {
 
-            @Override
-            public void run()
-            {
-                generateMap(context);
-                renderDefaultMap(context);
-                renderMap(context, credits);
-            }
-        });
+        generateMap(context);
+        renderDefaultMap(context);
+        renderMap(context, credits);
 
 
     }
@@ -114,20 +109,13 @@ public class CreditsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        AudioAttributes audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
-        this.soundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(audioAttributes).build();
-        this.onClickSound = this.soundPool.load(this, R.raw.airplane_selection, 1);
-
         MenuMusicHandler.getInstance().start(this);
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
-        soundPool = null;
-
-        onClickSound = 0;
 
         String nextActivity = MenuMusicHandler.getInstance().getNextActivity();
 
@@ -151,7 +139,7 @@ public class CreditsActivity extends AppCompatActivity {
     private void generateMap(Context context) {
         int mapRows = Integer.parseInt(context.getString(R.string.MAP_ROWS));
         int mapColumns = Integer.parseInt(context.getString(R.string.MAP_COLUMNS));
-        int width = creditsTexts.getMeasuredWidth();
+        int width = airfightDataBase.getLayoutWidth();
         int height = (int)(0.5 * width);
         int square = (int)(((height - 2 * 12 ) / 12));
         int columnIndex = 0;
@@ -230,7 +218,8 @@ public class CreditsActivity extends AppCompatActivity {
 
                         tv.setText(letter);
                         tv.setGravity(CENTER);
-                        tv.setTextColor(Color.parseColor("#EFC383"));
+                        tv.setTypeface(tv.getTypeface(), Typeface.BOLD);
+                        tv.setTextColor(Color.parseColor("#4b4b4b"));
                         tv.setBackgroundResource(R.drawable.white_square_rounded_3dp_layout);
 
                     }
@@ -246,10 +235,11 @@ public class CreditsActivity extends AppCompatActivity {
 
     public void onClickBackButton(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         MenuMusicHandler.getInstance().setNextActivity(getResources().getString(R.string.MENU_ACTIVITY));
         Intent intent = new Intent(CreditsActivity.this, MenuActivity.class);
         startActivity(intent);
+        finish();
     }
 }

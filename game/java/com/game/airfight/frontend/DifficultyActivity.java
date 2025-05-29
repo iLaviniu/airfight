@@ -7,8 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.media.AudioAttributes;
-import android.media.SoundPool;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -18,6 +17,7 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.game.airfight.backend.SoundPoolSingleton;
 import com.game.profile.airfight.R;
 import com.game.airfight.backend.AirfightDataBase;
 import com.game.airfight.backend.BackButtonOff;
@@ -32,15 +32,13 @@ public class DifficultyActivity extends AppCompatActivity {
 
     LinearLayout menuSelector = null;
 
-    private SoundPool soundPool = null;
-
-    private int onClickSound = 0;
-
     private ArrayList<MenuField> menuFields = null;
 
     private AirfightDataBase airfightDataBase = null;
 
-    private int squareSize = 0;
+
+    private static BackButtonOff backButtonOff = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +46,7 @@ public class DifficultyActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_mode);
 
-        new BackButtonOff(this);
+        backButtonOff = new BackButtonOff(this);
 
         context = getBaseContext();
 
@@ -66,10 +64,16 @@ public class DifficultyActivity extends AppCompatActivity {
 
         if(airfightDataBase.getGameDifficulty().equals(context.getString(R.string.EASY))) {
             easy.setActive(true);
+            easy.getMenuElement().moveElementToRight();
+            easy.getMenuElement().moveElementToRight();
         } else if (airfightDataBase.getGameDifficulty().equals(context.getString(R.string.MEDIUM))) {
             medium.setActive(true);
+            medium.getMenuElement().moveElementToRight();
+            medium.getMenuElement().moveElementToRight();
         } else if (airfightDataBase.getGameDifficulty().equals(context.getString(R.string.HARD))) {
             hard.setActive(true);
+            hard.getMenuElement().moveElementToRight();
+            hard.getMenuElement().moveElementToRight();
         }
 
         menuFields = new ArrayList<>();
@@ -96,17 +100,10 @@ public class DifficultyActivity extends AppCompatActivity {
         menuLayout.setLayoutParams(gameLayoutParams);
 
         menuSelector = (LinearLayout)findViewById(R.id.menuSelector);
-        menuSelector.post(new Runnable()
-        {
 
-            @Override
-            public void run()
-            {
-                generateMap(context);
-                renderDefaultMap(context);
-                renderMap(context, menuFields);
-            }
-        });
+        generateMap(context);
+        renderDefaultMap(context);
+        renderMap(context, menuFields);
 
     }
 
@@ -114,20 +111,14 @@ public class DifficultyActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        AudioAttributes audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
-        this.soundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(audioAttributes).build();
-        this.onClickSound = this.soundPool.load(this, R.raw.airplane_selection, 1);
-
         MenuMusicHandler.getInstance().start(this);
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        soundPool = null;
-
-        onClickSound = 0;
 
         String nextActivity = MenuMusicHandler.getInstance().getNextActivity();
 
@@ -151,13 +142,11 @@ public class DifficultyActivity extends AppCompatActivity {
     private void generateMap(Context context) {
         int mapRows = Integer.parseInt(context.getString(R.string.MAP_ROWS));
         int mapColumns = Integer.parseInt(context.getString(R.string.MAP_COLUMNS));
-        int width = menuSelector.getMeasuredWidth();
+        int width = airfightDataBase.getLayoutWidth();
         int height = (int)(0.5 * width);
         int square = (int)(((height - 2 * 12 ) / 12));
         int columnIndex = 0;
         int rowIndex = 0;
-
-        squareSize = square;
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(1,1,1,1);
@@ -232,12 +221,14 @@ public class DifficultyActivity extends AppCompatActivity {
 
                         tv.setText(letter);
                         tv.setGravity(CENTER);
-                        tv.setTextColor(Color.parseColor("#EFC383"));
+                        tv.setTypeface(tv.getTypeface(), Typeface.BOLD);
 
                         if(menuField.isActive()) {
                             tv.setBackgroundResource(R.drawable.blue_square_rounded_3dp_layout);
+                            tv.setTextColor(Color.parseColor("#212121"));
                         } else {
                             tv.setBackgroundResource(R.drawable.white_square_rounded_3dp_layout);
+                            tv.setTextColor(Color.parseColor("#4b4b4b"));
                         }
                     }
                 }
@@ -252,7 +243,7 @@ public class DifficultyActivity extends AppCompatActivity {
 
     public void onClickUp(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         int activeIndex = 0;
         int menuFieldIndex = 0;
@@ -262,6 +253,8 @@ public class DifficultyActivity extends AppCompatActivity {
             if(menuField.isActive()) {
                 activeIndex = menuFieldIndex;
                 menuField.setActive(false);
+                menuField.getMenuElement().moveElementToLeft();
+                menuField.getMenuElement().moveElementToLeft();
             }
             menuFieldIndex++;
         }
@@ -276,6 +269,8 @@ public class DifficultyActivity extends AppCompatActivity {
         for(MenuField menuField: menuFields) {
             if(menuFieldIndex == menuFieldNextIndex) {
                 menuField.setActive(true);
+                menuField.getMenuElement().moveElementToRight();
+                menuField.getMenuElement().moveElementToRight();
             }
             menuFieldIndex++;
         }
@@ -286,7 +281,7 @@ public class DifficultyActivity extends AppCompatActivity {
 
     public void onClickDown(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         int activeIndex = 0;
         int menuFieldIndex = 0;
@@ -296,6 +291,8 @@ public class DifficultyActivity extends AppCompatActivity {
             if(menuField.isActive()) {
                 activeIndex = menuFieldIndex;
                 menuField.setActive(false);
+                menuField.getMenuElement().moveElementToLeft();
+                menuField.getMenuElement().moveElementToLeft();
             }
             menuFieldIndex++;
         }
@@ -310,6 +307,8 @@ public class DifficultyActivity extends AppCompatActivity {
         for(MenuField menuField: menuFields) {
             if(menuFieldIndex == menuFieldNextIndex) {
                 menuField.setActive(true);
+                menuField.getMenuElement().moveElementToRight();
+                menuField.getMenuElement().moveElementToRight();
             }
             menuFieldIndex++;
         }
@@ -320,7 +319,7 @@ public class DifficultyActivity extends AppCompatActivity {
 
     public void onClickModeSelected(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         for(MenuField menuField: menuFields) {
             if(menuField.isActive()) {
@@ -342,5 +341,6 @@ public class DifficultyActivity extends AppCompatActivity {
         MenuMusicHandler.getInstance().setNextActivity(getResources().getString(R.string.MENU_ACTIVITY));
         Intent intent = new Intent(DifficultyActivity.this, MenuActivity.class);
         startActivity(intent);
+        finish();
     }
 }

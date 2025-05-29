@@ -9,10 +9,8 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.media.AudioAttributes;
-import android.media.MediaPlayer;
-import android.media.SoundPool;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
@@ -24,12 +22,12 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.game.profile.airfight.R;
 import com.game.airfight.backend.AirfightDataBase;
+import com.game.airfight.backend.SoundPoolSingleton;
+import com.game.profile.airfight.R;
 import com.game.airfight.backend.Airplane;
 import com.game.airfight.backend.BackButtonOff;
 import com.game.airfight.backend.Coordinate;
-import com.game.airfight.backend.EnemyFleet;
 import com.game.airfight.backend.EnemySingleton;
 import com.game.airfight.backend.MenuMusicHandler;
 
@@ -41,165 +39,236 @@ public class EnemyFieldActivity extends AppCompatActivity implements View.OnClic
 
     LinearLayout enemyFieldPlatform = null;
 
-    private SoundPool soundPool = null;
-
-    private int onClickSound = 0;
-
-    private int onFireSound = 0;
-
-    private AirfightDataBase airfightDataBase = null;
 
     private Coordinate currentTarget = new Coordinate(0, 0);
 
-
     ImageView airplaneHeads = null;
+
+    private boolean isShotTaken = false;
+
+    private AirfightDataBase airfightDataBase = null;
+
+
+    private static Handler handler = null;
+    private static Runnable runnableWait = null;
+
+    private static Handler handler2 = null;
+    private static Runnable runnableWait2 = null;
+
+    private static BackButtonOff backButtonOff = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_enemy_field);
 
-        new BackButtonOff(this);
+        try {
+            EdgeToEdge.enable(this);
+            setContentView(R.layout.activity_enemy_field);
 
-        context = getBaseContext();
+            backButtonOff = new BackButtonOff(this);
 
-        airfightDataBase = new AirfightDataBase(context);
+            context = getBaseContext();
 
+            airfightDataBase = new AirfightDataBase(context);
 
-        EnemySingleton.getInstance(context);
-
-
-        View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE);
-
-        RelativeLayout enemyFieldLayout = (RelativeLayout)findViewById(R.id.enemyFieldLayout);
-        RelativeLayout.LayoutParams gameLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        if (SDK_INT >= android.os.Build.VERSION_CODES.P){
-            gameLayoutParams.setMargins(dpToPixels(45),dpToPixels(0),dpToPixels(45),dpToPixels(0));
-        } else{
-            gameLayoutParams.setMargins(dpToPixels(0),dpToPixels(0),dpToPixels(0),dpToPixels(0));
-        }
-        enemyFieldLayout.setLayoutParams(gameLayoutParams);
-
-        LinearLayout.LayoutParams paramsH = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        airplaneHeads = (ImageView)findViewById(R.id.airplaneHeads);
-        Bitmap icon = null;
-
-        if(EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 1) {
-            icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.one_button_gray);
-            airplaneHeads.setImageBitmap(icon);
-        } else if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 2) {
-            icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.tow_button_gray);
-            airplaneHeads.setImageBitmap(icon);
-        } else if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 3) {
-            icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.three_button_gray);
-            airplaneHeads.setImageBitmap(icon);
-        } else if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 0) {
-            icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.empty_button_gray);
-            airplaneHeads.setImageBitmap(icon);
-        }
-
-        airplaneHeads.setImageBitmap(icon);
-        airplaneHeads.setLayoutParams(paramsH);
+            airfightDataBase.updateCurrentFleet("ENEMY_FLEET");
 
 
 
-        enemyFieldPlatform = (LinearLayout)findViewById(R.id.enemyFieldPlatform);
-        enemyFieldPlatform.post(new Runnable()
-        {
+            airfightDataBase.updateEnemyShotStatus("SHOT_NOT_TAKEN");
 
-            @Override
-            public void run()
-            {
-                generateMap(context);
-                renderDefaultMap(context);
-                renderMap(context, EnemySingleton.getInstance(context).getMyShots(), currentTarget, false);
+            EnemySingleton.getInstance(context);
+
+
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE);
+
+            RelativeLayout enemyFieldLayout = (RelativeLayout) findViewById(R.id.enemyFieldLayout);
+            RelativeLayout.LayoutParams gameLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            if (SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                gameLayoutParams.setMargins(dpToPixels(45), dpToPixels(0), dpToPixels(45), dpToPixels(0));
+            } else {
+                gameLayoutParams.setMargins(dpToPixels(0), dpToPixels(0), dpToPixels(0), dpToPixels(0));
             }
-        });
+            enemyFieldLayout.setLayoutParams(gameLayoutParams);
 
+            LinearLayout.LayoutParams paramsH = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            airplaneHeads = (ImageView) findViewById(R.id.airplaneHeads);
+            Bitmap icon = null;
+
+            if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 1) {
+                icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.airplanes_count_1);
+                airplaneHeads.setImageBitmap(icon);
+            } else if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 2) {
+                icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.airplanes_count_2);
+                airplaneHeads.setImageBitmap(icon);
+            } else if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 3) {
+                icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.airplanes_count_3);
+                airplaneHeads.setImageBitmap(icon);
+            } else if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 0) {
+                icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.airplanes_count_0);
+                airplaneHeads.setImageBitmap(icon);
+            }
+
+            airplaneHeads.setImageBitmap(icon);
+            airplaneHeads.setLayoutParams(paramsH);
+
+
+            enemyFieldPlatform = (LinearLayout) findViewById(R.id.enemyFieldPlatform);
+
+
+            generateMap(context);
+            renderDefaultMap(context);
+            renderMap(context, EnemySingleton.getInstance(context).getMyShots(), currentTarget, false);
+
+        }  catch (Exception e) {
+
+            System.out.println("Error: " + e.toString());
+        }
+        finally {
+            System.out.println("Program continues after handling the exception.");
+        }
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        try{
+            if(airfightDataBase.getMyShotStatus().equals("SHOT_TAKEN")){
 
-        AudioAttributes audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
-        this.soundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(audioAttributes).build();
-        this.onClickSound = this.soundPool.load(this, R.raw.airplane_selection, 1);
-        this.onFireSound = this.soundPool.load(this, R.raw.fire_sound, 1);
+                isShotTaken = true;
+
+                handler2 = new Handler();
+                runnableWait2 = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 3) {
+
+                            SoundPoolSingleton.getInstance(context).playSuccessSound();
+
+                            MenuMusicHandler.getInstance().setNextActivity(getResources().getString(R.string.RESULTS_ACTIVITY));
+                            Intent intent = new Intent(EnemyFieldActivity.this, ResultsActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            MenuMusicHandler.getInstance().setNextActivity(getResources().getString(R.string.MY_FIELD_ACTIVITY));
+                            Intent intent = new Intent(EnemyFieldActivity.this, MyFieldActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                    }
+                };
+                handler2.postDelayed(runnableWait2, 2000);
+
+            } else {
+                isShotTaken = false;
+            }
+        }  catch (Exception e) {
+
+            System.out.println("Error: " + e.toString());
+        }
+        finally {
+            System.out.println("Program continues after handling the exception.");
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        soundPool = null;
+        try{
 
-        onClickSound = 0;
+            handler.removeCallbacks(runnableWait);
+            handler.removeCallbacksAndMessages(null);
 
-        onFireSound = 0;
+            handler2.removeCallbacks(runnableWait2);
+            handler2.removeCallbacksAndMessages(null);
+        }  catch (Exception e) {
+
+            System.out.println("Error: " + e.toString());
+        }
+        finally {
+            System.out.println("Program continues after handling the exception.");
+        }
     }
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        Configuration old = newBase.getResources().getConfiguration();
+        try{
 
-        final Configuration override = new Configuration(newBase.getResources().getConfiguration());
-        override.fontScale = 1.0f;
-        newBase = newBase.createConfigurationContext(override);
+            Configuration old = newBase.getResources().getConfiguration();
 
-        super.attachBaseContext(newBase);
+            final Configuration override = new Configuration(newBase.getResources().getConfiguration());
+            override.fontScale = 1.0f;
+            newBase = newBase.createConfigurationContext(override);
+
+            super.attachBaseContext(newBase);
+        }  catch (Exception e) {
+
+            System.out.println("Error: " + e.toString());
+        }
+        finally {
+            System.out.println("Program continues after handling the exception.");
+        }
     }
 
     private void generateMap(Context context) {
         int mapRows = Integer.parseInt(context.getString(R.string.MAP_ROWS));
         int mapColumns = Integer.parseInt(context.getString(R.string.MAP_COLUMNS));
-        int width = enemyFieldPlatform.getMeasuredWidth();
+        int width = airfightDataBase.getLayoutWidth();
         int height = (int)(0.5 * width);
         int square = (int)(((height - 2 * 12 ) / 12));
         int columnIndex = 0;
         int rowIndex = 0;
 
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.setMargins(1,1,1,1);
+        try{
 
-        for(columnIndex = 1; columnIndex <= mapColumns; columnIndex++) {
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            params.setMargins(1,1,1,1);
 
-            LinearLayout linearLayoutRow = new LinearLayout(context);
-            linearLayoutRow.setSoundEffectsEnabled(false);
-            linearLayoutRow.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-            linearLayoutRow.setOrientation(LinearLayout.VERTICAL);
-            linearLayoutRow.setGravity(CENTER);
-            linearLayoutRow.setTag(columnIndex);
-            linearLayoutRow.setBackgroundColor(Color.parseColor("#FFFFFF"));
+            for(columnIndex = 1; columnIndex <= mapColumns; columnIndex++) {
 
-            ArrayList<TextView> row = new ArrayList<>();
+                LinearLayout linearLayoutRow = new LinearLayout(context);
+                linearLayoutRow.setSoundEffectsEnabled(false);
+                linearLayoutRow.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                linearLayoutRow.setOrientation(LinearLayout.VERTICAL);
+                linearLayoutRow.setGravity(CENTER);
+                linearLayoutRow.setTag(columnIndex);
+                linearLayoutRow.setBackgroundColor(Color.parseColor("#FFFFFF"));
 
-            for(rowIndex = 1; rowIndex <= mapRows; rowIndex++) {
+                ArrayList<TextView> row = new ArrayList<>();
 
-                TextView tv = new TextView(context);
-                tv.setSoundEffectsEnabled(false);
-                tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                tv.setWidth(square);
-                tv.setHeight(square);
-                tv.setLayoutParams(params);
-                tv.setBackgroundResource(R.drawable.gray_square_rounded_3dp_layout);
-                String text = "map:" + String.valueOf(rowIndex) + ":" + String.valueOf(columnIndex);
-                tv.setTag(text);
-                tv.setOnClickListener(this);
+                for(rowIndex = 1; rowIndex <= mapRows; rowIndex++) {
 
-                linearLayoutRow.addView(tv);
+                    TextView tv = new TextView(context);
+                    tv.setSoundEffectsEnabled(false);
+                    tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                    tv.setWidth(square);
+                    tv.setHeight(square);
+                    tv.setLayoutParams(params);
+                    tv.setBackgroundResource(R.drawable.gray_square_rounded_3dp_layout);
+                    String text = "map:" + String.valueOf(rowIndex) + ":" + String.valueOf(columnIndex);
+                    tv.setTag(text);
+                    tv.setOnClickListener(this);
+
+                    linearLayoutRow.addView(tv);
+                }
+
+                enemyFieldPlatform.addView(linearLayoutRow);
             }
+        }  catch (Exception e) {
 
-            enemyFieldPlatform.addView(linearLayoutRow);
+            System.out.println("Error: " + e.toString());
+        }
+        finally {
+            System.out.println("Program continues after handling the exception.");
         }
     }
 
@@ -209,15 +278,24 @@ public class EnemyFieldActivity extends AppCompatActivity implements View.OnClic
         int columnIndex = 1;
         int rowIndex = 1;
 
-        for(columnIndex = 1; columnIndex <= mapColumns; columnIndex++) {
-            LinearLayout ll = (LinearLayout)enemyFieldPlatform.getChildAt(columnIndex - 1);
+        try{
 
-            for(rowIndex = 1; rowIndex <= mapRows; rowIndex++) {
-                TextView tv  = (TextView) ll.getChildAt(rowIndex - 1);
-                tv.setBackgroundResource(R.drawable.gray_square_rounded_3dp_layout);
-                tv.clearAnimation();
-                tv.setText("");
+            for(columnIndex = 1; columnIndex <= mapColumns; columnIndex++) {
+                LinearLayout ll = (LinearLayout)enemyFieldPlatform.getChildAt(columnIndex - 1);
+
+                for(rowIndex = 1; rowIndex <= mapRows; rowIndex++) {
+                    TextView tv  = (TextView) ll.getChildAt(rowIndex - 1);
+                    tv.setBackgroundResource(R.drawable.gray_square_rounded_3dp_layout);
+                    tv.clearAnimation();
+                    tv.setText("");
+                }
             }
+        }  catch (Exception e) {
+
+            System.out.println("Error: " + e.toString());
+        }
+        finally {
+            System.out.println("Program continues after handling the exception.");
         }
     }
 
@@ -227,24 +305,33 @@ public class EnemyFieldActivity extends AppCompatActivity implements View.OnClic
         int columnIndex = 1;
         int rowIndex = 1;
 
-        for(columnIndex = 1; columnIndex <= mapColumns; columnIndex++) {
-            LinearLayout ll = (LinearLayout)enemyFieldPlatform.getChildAt(columnIndex - 1);
+        try{
 
-            for(rowIndex = 1; rowIndex <= mapRows; rowIndex++) {
-                TextView tv = (TextView) ll.getChildAt(rowIndex - 1);
+            for(columnIndex = 1; columnIndex <= mapColumns; columnIndex++) {
+                LinearLayout ll = (LinearLayout)enemyFieldPlatform.getChildAt(columnIndex - 1);
 
-                for (Coordinate myShot : myShots) {
+                for(rowIndex = 1; rowIndex <= mapRows; rowIndex++) {
+                    TextView tv = (TextView) ll.getChildAt(rowIndex - 1);
 
-                    if ((myShot.getRow() == rowIndex) && (myShot.getColumn() == columnIndex)) {
+                    for (Coordinate myShot : myShots) {
 
-                        tv.setBackground(EnemySingleton.getInstance(context).getEnemyFleet().getFuselageDrawable());
+                        if ((myShot.getRow() == rowIndex) && (myShot.getColumn() == columnIndex)) {
+
+                            tv.setBackground(EnemySingleton.getInstance(context).getEnemyFleet().getFuselageDrawable());
+                        }
+                    }
+
+                    if ((currentShot.getRow() == rowIndex) && (currentShot.getColumn() == columnIndex) && isCurrentShotPartOfFleet) {
+                        tv.startAnimation(AnimationUtils.loadAnimation(context, R.anim.shot_animation));
                     }
                 }
-
-                if ((currentShot.getRow() == rowIndex) && (currentShot.getColumn() == columnIndex) && isCurrentShotPartOfFleet) {
-                    tv.startAnimation(AnimationUtils.loadAnimation(context, R.anim.shot_animation));
-                }
             }
+        }  catch (Exception e) {
+
+            System.out.println("Error: " + e.toString());
+        }
+        finally {
+            System.out.println("Program continues after handling the exception.");
         }
     }
 
@@ -256,129 +343,200 @@ public class EnemyFieldActivity extends AppCompatActivity implements View.OnClic
     @Override
     public void onClick(View view) {
 
-        String selectedTag = String.valueOf(view.getTag());
+        try{
+            String selectedTag = String.valueOf(view.getTag());
 
-        if(selectedTag.contains("map:")) {
+            if(selectedTag.contains("map:")) {
 
-            renderDefaultMap(context);
+                renderDefaultMap(context);
 
-            view.setBackgroundResource(R.drawable.target_selected);
+                view.setBackgroundResource(R.drawable.target_selected);
 
-            this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+                SoundPoolSingleton.getInstance(context).playOnClickSound();
 
-            String[] array = selectedTag.split(":");
-            int selectedRow = Integer.parseInt(array[1]);
-            int selectedColumn = Integer.parseInt(array[2]);
+                String[] array = selectedTag.split(":");
+                int selectedRow = Integer.parseInt(array[1]);
+                int selectedColumn = Integer.parseInt(array[2]);
 
-            currentTarget.setRow(selectedRow);
-            currentTarget.setColumn(selectedColumn);
+                currentTarget.setRow(selectedRow);
+                currentTarget.setColumn(selectedColumn);
+            }
+
+            renderMap(context, EnemySingleton.getInstance(context).getMyShots(), currentTarget, false);
+        }  catch (Exception e) {
+
+            System.out.println("Error: " + e.toString());
         }
-        
-        renderMap(context, EnemySingleton.getInstance(context).getMyShots(), currentTarget, false);
+        finally {
+            System.out.println("Program continues after handling the exception.");
+        }
     }
 
     public void onClickFire(View view) {
 
         boolean isCurrentShotPartOfFleet = false;
 
-        if(currentTarget.isTargetOnMap(context)) {
-            this.soundPool.play(this.onFireSound, 1, 1, 0, 0, 1);
+        try{
+            if(!isShotTaken) {
 
-            if(isShootPartOfEnemyFleet(EnemySingleton.getInstance(context).getEnemyFleet().getAirplanes(), currentTarget)) {
+                airfightDataBase.updateMyShotStatus("SHOT_TAKEN");
 
-                isCurrentShotPartOfFleet = true;
+                if (currentTarget.isTargetOnMap(context)) {
 
-                if(!isShotAlreadyTaken(EnemySingleton.getInstance(context).getMyShots(), currentTarget)) {
-                    EnemySingleton.getInstance(context).getMyShots().add(new Coordinate(currentTarget.getRow(), currentTarget.getColumn()));
 
-                    /*check if is airplane head*/
-                    isHeadShot(EnemySingleton.getInstance(context).getEnemyFleet().getAirplanes(), currentTarget);
+
+                    SoundPoolSingleton.getInstance(context).playFireSound();
+
+                    if (isShootPartOfEnemyFleet(EnemySingleton.getInstance(context).getEnemyFleet().getAirplanes(), currentTarget)) {
+
+                        isCurrentShotPartOfFleet = true;
+
+                        if (!isShotAlreadyTaken(EnemySingleton.getInstance(context).getMyShots(), currentTarget)) {
+                            EnemySingleton.getInstance(context).getMyShots().add(new Coordinate(currentTarget.getRow(), currentTarget.getColumn()));
+
+                            /*check if is airplane head*/
+                            isHeadShot(EnemySingleton.getInstance(context).getEnemyFleet().getAirplanes(), currentTarget);
+                        }
+                    }
+
+                    updateHeadsCardNumber();
+
+                    renderDefaultMap(context);
+                    renderMap(context, EnemySingleton.getInstance(context).getMyShots(), currentTarget, isCurrentShotPartOfFleet);
+
+                    currentTarget.setRow(0);
+                    currentTarget.setColumn(0);
+
+                    /*deactivate shot button*/
+                    isShotTaken = true;
+
+
+
+                    handler = new Handler();
+                    runnableWait = new Runnable() {
+                        @Override
+                        public void run() {
+                            if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 3) {
+
+                                SoundPoolSingleton.getInstance(context).playSuccessSound();
+
+                                MenuMusicHandler.getInstance().setNextActivity(getResources().getString(R.string.RESULTS_ACTIVITY));
+                                Intent intent = new Intent(EnemyFieldActivity.this, ResultsActivity.class);
+                                startActivity(intent);
+                                finish();
+                            } else {
+                                MenuMusicHandler.getInstance().setNextActivity(getResources().getString(R.string.MY_FIELD_ACTIVITY));
+                                Intent intent = new Intent(EnemyFieldActivity.this, MyFieldActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                        }
+                    };
+                    handler.postDelayed(runnableWait, 2000);
+
+                } else {
+                    Toast.makeText(getBaseContext(), "Choose the target!", Toast.LENGTH_LONG).show();
                 }
-            }
-
-            updateHeadsCardNumber();
-
-            renderDefaultMap(context);
-            renderMap(context, EnemySingleton.getInstance(context).getMyShots(), currentTarget, isCurrentShotPartOfFleet);
-
-            currentTarget.setRow(0);
-            currentTarget.setColumn(0);
-
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-
-            if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 3) {
-
-                MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.success_sound);
-                mediaPlayer.setLooping(false);
-                mediaPlayer.start();
-
-                MenuMusicHandler.getInstance().setNextActivity(getResources().getString(R.string.RESULTS_ACTIVITY));
-                Intent intent = new Intent(EnemyFieldActivity.this, ResultsActivity.class);
-                startActivity(intent);
             } else {
-                MenuMusicHandler.getInstance().setNextActivity(getResources().getString(R.string.MY_FIELD_ACTIVITY));
-                Intent intent = new Intent(EnemyFieldActivity.this, MyFieldActivity.class);
-                startActivity(intent);
+                Toast.makeText(getBaseContext(), "The shot was already taken!", Toast.LENGTH_LONG).show();
             }
+        }  catch (Exception e) {
 
-        } else {
-            Toast.makeText(getBaseContext(), "Choose the target!", Toast.LENGTH_LONG).show();
+            System.out.println("Error: " + e.toString());
+        }
+            finally {
+            System.out.println("Program continues after handling the exception.");
         }
     }
 
     private boolean isShootPartOfEnemyFleet(ArrayList<Airplane> enemyAirplanes, Coordinate myShot) {
         boolean isPart = false;
-        for(Airplane enemyAirplane: enemyAirplanes) {
 
-            if(enemyAirplane.isPartOfAirplane(myShot.getRow(), myShot.getColumn())) {
-                isPart = true;
+        try{
+            for(Airplane enemyAirplane: enemyAirplanes) {
+
+                if(enemyAirplane.isPartOfAirplane(myShot.getRow(), myShot.getColumn())) {
+                    isPart = true;
+                }
             }
+        }  catch (Exception e) {
+
+            System.out.println("Error: " + e.toString());
         }
+        finally {
+            System.out.println("Program continues after handling the exception.");
+        }
+
         return isPart;
     }
 
     private boolean isShotAlreadyTaken(ArrayList<Coordinate> myShots, Coordinate newShot) {
 
         boolean alreadyTaken = false;
-        for(Coordinate myShot: myShots) {
 
-            if ((myShot.getRow() == newShot.getRow()) && (myShot.getColumn() == newShot.getColumn())) {
-                alreadyTaken = true;
-                break;
+        try{
+            for(Coordinate myShot: myShots) {
+
+                if ((myShot.getRow() == newShot.getRow()) && (myShot.getColumn() == newShot.getColumn())) {
+                    alreadyTaken = true;
+                    break;
+                }
             }
+        }  catch (Exception e) {
+
+            System.out.println("Error: " + e.toString());
         }
+        finally {
+            System.out.println("Program continues after handling the exception.");
+        }
+
         return alreadyTaken;
     }
 
     private void isHeadShot(ArrayList<Airplane> enemyAirplanes, Coordinate myShot) {
 
-        for(Airplane enemyAirplane: enemyAirplanes) {
+        try{
 
-            if(enemyAirplane.isPartOfAirplane(myShot.getRow(), myShot.getColumn())) {
+            for(Airplane enemyAirplane: enemyAirplanes) {
 
-                if(enemyAirplane.isAirplaneHead(myShot.getRow(), myShot.getColumn())) {
+                if(enemyAirplane.isPartOfAirplane(myShot.getRow(), myShot.getColumn())) {
 
-                    EnemySingleton.getInstance(context).increaseEnemyHeadsNumber();
+                    if(enemyAirplane.isAirplaneHead(myShot.getRow(), myShot.getColumn())) {
+
+                        EnemySingleton.getInstance(context).increaseEnemyHeadsNumber();
+                    }
                 }
             }
+
+        }  catch (Exception e) {
+
+            System.out.println("Error: " + e.toString());
+        }
+        finally {
+            System.out.println("Program continues after handling the exception.");
         }
     }
 
     private void updateHeadsCardNumber() {
 
-        if(EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 1) {
-            Bitmap icon1 = BitmapFactory.decodeResource(context.getResources(), R.drawable.one_button_gray);
-            airplaneHeads.setImageBitmap(icon1);
-        } else if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 2) {
-            Bitmap icon2 = BitmapFactory.decodeResource(context.getResources(), R.drawable.tow_button_gray);
-            airplaneHeads.setImageBitmap(icon2);
-        } else if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 3) {
-            Bitmap icon3 = BitmapFactory.decodeResource(context.getResources(), R.drawable.three_button_gray);
-            airplaneHeads.setImageBitmap(icon3);
+        try{
+
+            if(EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 1) {
+                Bitmap icon1 = BitmapFactory.decodeResource(context.getResources(), R.drawable.airplanes_count_1);
+                airplaneHeads.setImageBitmap(icon1);
+            } else if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 2) {
+                Bitmap icon2 = BitmapFactory.decodeResource(context.getResources(), R.drawable.airplanes_count_2);
+                airplaneHeads.setImageBitmap(icon2);
+            } else if (EnemySingleton.getInstance(context).getEnemyHeadsNumber() == 3) {
+                Bitmap icon3 = BitmapFactory.decodeResource(context.getResources(), R.drawable.airplanes_count_3);
+                airplaneHeads.setImageBitmap(icon3);
+            }
+        }  catch (Exception e) {
+
+            System.out.println("Error: " + e.toString());
+        }
+        finally {
+            System.out.println("Program continues after handling the exception.");
         }
     }
 }

@@ -7,8 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.media.AudioAttributes;
-import android.media.SoundPool;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -19,6 +17,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 
+import com.game.airfight.backend.SoundPoolSingleton;
 import com.game.profile.airfight.R;
 import com.game.airfight.backend.AirfightDataBase;
 import com.game.airfight.backend.Airplane;
@@ -38,11 +37,12 @@ public class ResultsActivity extends AppCompatActivity {
 
     LinearLayout resultsLayout = null;
 
-    private SoundPool soundPool = null;
-
-    private int onClickSound = 0;
-
     private AirfightDataBase airfightDataBase = null;
+
+    private int fuselageId = -1;
+
+
+    private static BackButtonOff backButtonOff = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,11 +50,17 @@ public class ResultsActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_results);
 
-        new BackButtonOff(this);
+        backButtonOff = new BackButtonOff(this);
 
         context = getBaseContext();
 
         airfightDataBase = new AirfightDataBase(context);
+
+        airfightDataBase.updateBattleStatus("BATTLE_FINISHED");
+
+        airfightDataBase.updateCurrentFleet("EMPTY");
+
+        fuselageId = airfightDataBase.getFuselageId();
 
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(
@@ -75,43 +81,20 @@ public class ResultsActivity extends AppCompatActivity {
         resultsActivityLayout.setLayoutParams(gameLayoutParams);
 
         resultsLayout = (LinearLayout)findViewById(R.id.resultsLayout);
-        resultsLayout.post(new Runnable()
-        {
-
-            @Override
-            public void run()
-            {
-
-                /*my airplanes*/
-                ArrayList<Airplane> myAirplanes = MyAirplanesSingleton.getInstance().getMyFleet();
-
-                /*enemy shots*/
-                ArrayList<Coordinate> enemyShots = MySingleton.getInstance().getEnemyShots();
-
-                generateMap(context);
-                renderDefaultMap(context);
-                renderMap(context, myAirplanes, enemyShots, context.getString(R.string.MY_FLEET));
-            }
-        });
 
 
-    }
+        generateMap(context);
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+        /*my airplanes*/
+        ArrayList<Airplane> myAirplanes = MyAirplanesSingleton.getInstance().getMyFleet();
 
-        AudioAttributes audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
-        this.soundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(audioAttributes).build();
-        this.onClickSound = this.soundPool.load(this, R.raw.airplane_selection, 1);
-    }
+        /*enemy shots*/
+        ArrayList<Coordinate> enemyShots = MySingleton.getInstance().getEnemyShots();
 
-    @Override
-    protected void onPause() {
-        super.onPause();
 
-        this.soundPool = null;
-        this.onClickSound = 0;
+        renderDefaultMap(context);
+        renderMap(context, myAirplanes, enemyShots, context.getString(R.string.MY_FLEET));
+
 
     }
 
@@ -129,7 +112,7 @@ public class ResultsActivity extends AppCompatActivity {
     private void generateMap(Context context) {
         int mapRows = Integer.parseInt(context.getString(R.string.MAP_ROWS));
         int mapColumns = Integer.parseInt(context.getString(R.string.MAP_COLUMNS));
-        int width = resultsLayout.getMeasuredWidth();
+        int width = airfightDataBase.getLayoutWidth();
         int height = (int)(0.5 * width);
         int square = (int)(((height - 2 * 12 ) / 12));
         int columnIndex = 0;
@@ -196,7 +179,7 @@ public class ResultsActivity extends AppCompatActivity {
         
         if(fleet.equals(context.getString(R.string.MY_FLEET))) {
 
-            roundedBitmapDrawable = FuselageSingleton.getInstance().getAirplaneFuselageDrawable(airfightDataBase.getFuselageId());
+            roundedBitmapDrawable = FuselageSingleton.getInstance().getAirplaneFuselageDrawable(fuselageId);
 
         } else if (fleet.equals(context.getString(R.string.ENEMY_FLEET))) {
 
@@ -234,7 +217,7 @@ public class ResultsActivity extends AppCompatActivity {
 
     public void onClickMyFleetButton(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         /*my airplanes*/
         ArrayList<Airplane> myAirplanes = MyAirplanesSingleton.getInstance().getMyFleet();
@@ -248,7 +231,7 @@ public class ResultsActivity extends AppCompatActivity {
 
     public void onClickEnemyFleetButton(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         /*enemy airplanes*/
         ArrayList<Airplane> enemyFleet = EnemySingleton.getInstance(context).getEnemyFleet().getAirplanes();
@@ -262,10 +245,11 @@ public class ResultsActivity extends AppCompatActivity {
 
     public void onClickMenuButton(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         MenuMusicHandler.getInstance().setNextActivity(getResources().getString(R.string.MENU_ACTIVITY));
         Intent intent = new Intent(ResultsActivity.this, MenuActivity.class);
         startActivity(intent);
+        finish();
     }
 }

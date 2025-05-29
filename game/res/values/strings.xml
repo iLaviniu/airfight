@@ -37,7 +37,7 @@
     <string name="MEDIUM">MEDIUM</string>
     <string name="HARD">HARD</string>
 
-    <string name="CREDIT1">Stock Tune</string>
+    <string name="CREDIT1">Stock-Tune</string>
     <string name="CREDIT2">Pixabay</string>
     <string name="CREDIT3">Hotpot.ai</string>
     <string name="CREDIT4">Freepik</string>
@@ -47,5 +47,56 @@
     <string name="MY_FLEET">MY_FLEET</string>
     <string name="ENEMY_FLEET">ENEMY_FLEET</string>
 
+
+    <string name="FLY_UP">FLY_UP</string>
+    <string name="FLY_TO_RIGHT">FLY_TO_RIGHT</string>
+    <string name="FLY_DOWN">FLY_DOWN</string>
+    <string name="FLY_TO_LEFT">FLY_TO_LEFT</string>
+
+
+
+    <string name="airplaneDescription">image used for adding airplanes</string>
+    <string name="fleetCountDescription">image used to show the numbers of airplanes</string>
+    <string name="airplaneUpDescription">used to move the airplane up</string>
+    <string name="airplaneDownDescription">used to move the airplane down</string>
+    <string name="airplaneLeftDescription">used to move the airplane to the left</string>
+    <string name="airplaneRightDescription">used to move the airplane to the right</string>
+    <string name="airplaneRotateDescription">used to rotate the airplane</string>
+    <string name="fleetAcceptDescription">used to accept the configured fleet</string>
+
+    <string name="spanDescription">used to stretch the dummy space</string>
+
+    <string name="iconLoading">used to stretch the dummy space</string>
+
+    <string name="fuselageUpDescription">used to move up the fuselage selector</string>
+    <string name="fuselageDownDescription">used to move down the fuselage selector</string>
+    <string name="fuselageAcceptDescription">used to accept the chose fuselage</string>
+
+
+    <string name="creditsAcceptDescription">used to accept and go back to the menu</string>
+    <string name="creditsSpanDescription">used to stretch the dummy space</string>
+
+    <string name="enemySpanDescription">used to stretch the dummy space</string>
+    <string name="enemyHeadsCount">used to show the enemy airplanes that were hit</string>
+    <string name="enemyShotButton">used to shot the enemy fleet</string>
+
+    <string name="menuSpanDescription">used to stretch the dummy space</string>
+    <string name="menuUpDescription">used to move menu item up</string>
+    <string name="menuDownDescription">used to move menu item down</string>
+    <string name="menuAcceptDescription">used to accept the chose menu</string>
+
+    <string name="modeSpanDescription">used to stretch the dummy space</string>
+    <string name="modeUpDescription">used to move menu item up</string>
+    <string name="modeDownDescription">used to move menu item down</string>
+    <string name="modeAcceptDescription">used to accept the chose menu</string>
+
+    <string name="myFleetSpanDescription">used to stretch the dummy space</string>
+    <string name="myFleetHeadsCount">used to show my airplanes count that were hit</string>
+    <string name="myFleetShotButton">used to go back to the enemy fleet</string>
+
+
+    <string name="resultAcceptDescription">used to go back to main menu</string>
+    <string name="resultMyFleetDescription">used to show my fleet</string>
+    <string name="resultEnemyDescription">used to show the enemy fleet</string>
 
 </resources>

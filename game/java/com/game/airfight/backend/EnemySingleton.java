@@ -31,6 +31,7 @@ public class EnemySingleton {
         return instance;
     }
 
+
     public ArrayList<Coordinate> getMyShots() {
         return myShots;
     }

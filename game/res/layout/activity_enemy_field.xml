@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#000000"
-    tools:context=".frontend.EnemyFieldActivity">
+    tools:context="com.game.airfight.frontend.EnemyFieldActivity">
 
     <RelativeLayout
         android:id="@+id/enemyFieldLayout"
@@ -27,6 +27,7 @@
 
 
             <ImageView
+                android:contentDescription="@string/enemySpanDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:src="@drawable/empty_full_white"
@@ -35,6 +36,7 @@
                 />
 
             <ImageView
+                android:contentDescription="@string/enemySpanDescription"
                 android:id="@+id/airplaneHeads"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -43,6 +45,7 @@
                 />
 
             <ImageView
+                android:contentDescription="@string/enemySpanDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:src="@drawable/empty_full_white"
@@ -77,6 +80,7 @@
             android:layout_alignParentEnd="true">
 
             <ImageView
+                android:contentDescription="@string/enemySpanDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:src="@drawable/empty_full_white"
@@ -86,6 +90,7 @@
 
 
             <ImageView
+                android:contentDescription="@string/enemyShotButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:src="@drawable/target_button_orange"
@@ -95,6 +100,7 @@
                 />
 
             <ImageView
+                android:contentDescription="@string/enemySpanDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:src="@drawable/empty_full_white"
