@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#000000"
-    tools:context=".frontend.CreditsActivity">
+    tools:context="com.game.airfight.frontend.CreditsActivity">
 
     <RelativeLayout
         android:id="@+id/creditsLayout"
@@ -27,8 +27,9 @@
 
 
             <ImageView
+                android:contentDescription="@string/spanDescription"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:src="@drawable/empty_full_white"
                 android:layout_weight="1"
                 android:soundEffectsEnabled="false"
@@ -63,9 +64,10 @@
             android:layout_alignParentEnd="true">
 
             <ImageView
+                android:contentDescription="@string/creditsAcceptDescription"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:src="@drawable/square_back_button_gray"
+                android:layout_height="0dp"
+                android:src="@drawable/accept_button"
                 android:layout_weight="1"
                 android:onClick="onClickBackButton"
                 android:soundEffectsEnabled="false"

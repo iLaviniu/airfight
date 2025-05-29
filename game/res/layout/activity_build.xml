@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#000000"
-    tools:context=".frontend.BuildActivity">
+    tools:context="com.game.airfight.frontend.BuildActivity">
 
     <RelativeLayout
         android:id="@+id/buildLayout"
@@ -27,6 +27,7 @@
 
 
             <ImageView
+                android:contentDescription="@string/spanDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:src="@drawable/empty_full_white"
@@ -35,12 +36,14 @@
                 />
 
             <ImageView
+                android:contentDescription="@string/fuselageUpDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/up_button_gray"
+                android:src="@drawable/arrow_button"
                 android:layout_weight="1"
                 android:onClick="onClickUp"
                 android:soundEffectsEnabled="false"
+                android:rotation="90"
                 />
 
 
@@ -72,21 +75,24 @@
             android:layout_alignParentEnd="true">
 
             <ImageView
+                android:contentDescription="@string/fuselageAcceptDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/square_back_button_gray"
+                android:src="@drawable/accept_button"
                 android:layout_weight="1"
                 android:onClick="onClickBackButton"
                 android:soundEffectsEnabled="false"
                 />
 
             <ImageView
+                android:contentDescription="@string/fuselageDownDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/down_button_gray"
+                android:src="@drawable/arrow_button"
                 android:layout_weight="1"
                 android:onClick="onClickDown"
                 android:soundEffectsEnabled="false"
+                android:rotation="270"
                 />
 
 

@@ -7,9 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.media.AudioAttributes;
-import android.media.SoundPool;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
@@ -19,6 +18,7 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.game.airfight.backend.SoundPoolSingleton;
 import com.game.profile.airfight.R;
 import com.game.airfight.backend.AirfightDataBase;
 import com.game.airfight.backend.Airplane;
@@ -35,17 +35,23 @@ public class BuildActivity extends AppCompatActivity {
 
     LinearLayout buildPlatform = null;
 
-    private SoundPool soundPool = null;
-
-    private int onClickSound = 0;
-
     private ArrayList<FuselagePart> fuselageParts = null;
 
     Airplane buildAirplane = null;
 
     private AirfightDataBase airfightDataBase = null;
 
-    private int squareSize = 0;
+    private String flightState = "";
+
+    private int fuselageId = -1;
+
+
+    private static Handler handlerAirplane = null;
+    private static Runnable runnableAirplane = null;
+
+
+    private static BackButtonOff backButtonOff = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +59,7 @@ public class BuildActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_build);
 
-        new BackButtonOff(this);
+        backButtonOff = new BackButtonOff(this);
 
         context = getBaseContext();
 
@@ -61,7 +67,13 @@ public class BuildActivity extends AppCompatActivity {
 
         airfightDataBase = new AirfightDataBase(context);
 
+
+
         buildAirplane = new Airplane();
+
+        buildAirplane.buildActivityAirplaneStartPosition();
+
+        flightState = context.getString(R.string.FLY_UP);
 
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(
@@ -82,31 +94,68 @@ public class BuildActivity extends AppCompatActivity {
         buildLayout.setLayoutParams(gameLayoutParams);
 
         buildPlatform = (LinearLayout)findViewById(R.id.buildPlatform);
-        buildPlatform.post(new Runnable()
-        {
 
+
+        generateMap(context);
+        renderDefaultMap(context);
+        renderMap(context, fuselageParts, buildAirplane);
+
+
+        handlerAirplane = new Handler();
+
+        runnableAirplane = new Runnable() {
             @Override
-            public void run()
-            {
-                generateMap(context);
+            public void run() {
+                if(flightState.equals(context.getString(R.string.FLY_UP))) {
+                    buildAirplane.flyUp();
+                } else if(flightState.equals(context.getString(R.string.FLY_TO_RIGHT))){
+                    buildAirplane.flyToRight();
+                } else if(flightState.equals(context.getString(R.string.FLY_DOWN))){
+                    buildAirplane.flyDown();
+                } else if(flightState.equals(context.getString(R.string.FLY_TO_LEFT))){
+                    buildAirplane.flyToLeft();
+                }
+
+
+
                 renderDefaultMap(context);
                 renderMap(context, fuselageParts, buildAirplane);
 
+
+
+                if((buildAirplane.getHead().getStart().getRow() == 2) && (buildAirplane.getHead().getStart().getColumn() == 13)){
+
+                    buildAirplane.rotate();
+                    flightState = context.getString(R.string.FLY_TO_RIGHT);
+                }
+
+                if((buildAirplane.getHead().getStart().getRow() == 4) && (buildAirplane.getHead().getStart().getColumn() == 23)){
+
+                    buildAirplane.rotate();
+                    flightState = context.getString(R.string.FLY_DOWN);
+                }
+
+                if((buildAirplane.getHead().getStart().getRow() == 11) && (buildAirplane.getHead().getStart().getColumn() == 21)){
+
+                    buildAirplane.rotate();
+                    flightState = context.getString(R.string.FLY_TO_LEFT);
+                }
+
+                if((buildAirplane.getHead().getStart().getRow() == 9) && (buildAirplane.getHead().getStart().getColumn() == 11)){
+
+                    buildAirplane.rotate();
+                    flightState = context.getString(R.string.FLY_UP);
+                }
+                handlerAirplane.postDelayed(this,1000);
             }
-        });
-
-
-
+        };
+        handlerAirplane.postDelayed(runnableAirplane,1000);
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        AudioAttributes audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
-        this.soundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(audioAttributes).build();
-        this.onClickSound = this.soundPool.load(this, R.raw.airplane_selection, 1);
 
         MenuMusicHandler.getInstance().start(this);
     }
@@ -115,8 +164,9 @@ public class BuildActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
 
-        this.soundPool = null;
-        this.onClickSound = 0;
+
+        handlerAirplane.removeCallbacks(runnableAirplane);
+        handlerAirplane.removeCallbacksAndMessages(null);
 
         String nextActivity = MenuMusicHandler.getInstance().getNextActivity();
 
@@ -140,13 +190,11 @@ public class BuildActivity extends AppCompatActivity {
     private void generateMap(Context context) {
         int mapRows = Integer.parseInt(context.getString(R.string.MAP_ROWS));
         int mapColumns = Integer.parseInt(context.getString(R.string.MAP_COLUMNS));
-        int width = buildPlatform.getMeasuredWidth();
+        int width = airfightDataBase.getLayoutWidth();
         int height = (int)(0.5 * width);
         int square = (int)(((height - 2 * 12 ) / 12));
         int columnIndex = 0;
         int rowIndex = 0;
-
-        squareSize = square;
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(1,1,1,1);
@@ -206,6 +254,8 @@ public class BuildActivity extends AppCompatActivity {
         int columnIndex = 1;
         int rowIndex = 1;
 
+        fuselageId = airfightDataBase.getFuselageId();
+
         for(columnIndex = 1; columnIndex <= mapColumns; columnIndex++) {
             LinearLayout ll = (LinearLayout)buildPlatform.getChildAt(columnIndex - 1);
 
@@ -227,7 +277,7 @@ public class BuildActivity extends AppCompatActivity {
 
                 if(buildAirplane.isPartOfAirplane(rowIndex, columnIndex)) {
 
-                    tv.setBackground(FuselageSingleton.getInstance().getAirplaneFuselageDrawable(airfightDataBase.getFuselageId()));
+                    tv.setBackground(FuselageSingleton.getInstance().getAirplaneFuselageDrawable(fuselageId));
                 }
             }
         }
@@ -240,16 +290,17 @@ public class BuildActivity extends AppCompatActivity {
 
     public void onClickBackButton(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         MenuMusicHandler.getInstance().setNextActivity(getResources().getString(R.string.MENU_ACTIVITY));
         Intent intent = new Intent(BuildActivity.this, MenuActivity.class);
         startActivity(intent);
+        finish();
     }
 
     public void onClickUp(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         int activeIndex = 0;
         int fuselagePartIndex = 0;
@@ -286,7 +337,7 @@ public class BuildActivity extends AppCompatActivity {
 
     public void onClickDown(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         int activeIndex = 0;
         int fuselagePartIndex = 0;

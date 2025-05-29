@@ -8,8 +8,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.media.AudioAttributes;
-import android.media.SoundPool;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.AnimationUtils;
@@ -20,6 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.game.airfight.backend.SoundPoolSingleton;
 import com.game.profile.airfight.R;
 import com.game.airfight.backend.AirfightDataBase;
 import com.game.airfight.backend.Airplane;
@@ -48,36 +48,37 @@ public class FleetStrategyActivity extends AppCompatActivity {
 
     private AirplaneCollisionDetector airplaneCollisionDetector = null;
 
-    private SoundPool soundPool = null;
-
-    private int onClickSound = 0;
-
     private AirfightDataBase airfightDataBase = null;
 
+    private int fuselageId = -1;
+
+    private static BackButtonOff backButtonOff = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_fleet_strategy);
 
-        new BackButtonOff(this);
+        backButtonOff = new BackButtonOff(this);
 
         context = getBaseContext();
 
         airfightDataBase = new AirfightDataBase(context);
 
+        fuselageId = airfightDataBase.getFuselageId();
+
         airplaneCollisionDetector = new AirplaneCollisionDetector(context);
 
-        airplanesIdsIcons.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.one_button_gray));
-        airplanesIdsIcons.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.tow_button_gray));
-        airplanesIdsIcons.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.three_button_gray));
+        airplanesIdsIcons.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.airplanes_count_1));
+        airplanesIdsIcons.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.airplanes_count_2));
+        airplanesIdsIcons.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.airplanes_count_3));
 
         loadingPlatform = new LoadingPlatform();
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         airplaneSelector = (ImageView)findViewById(R.id.airplaneSelector);
         Bitmap icon = BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.empty_button_gray);
+                R.drawable.airplanes_count_0);
         airplaneSelector.setImageBitmap(icon);
         airplaneSelector.setLayoutParams(params);
         airplaneSelector.setTag(0);
@@ -102,17 +103,10 @@ public class FleetStrategyActivity extends AppCompatActivity {
         playLayout.setLayoutParams(gameLayoutParams);
 
         mapLayout = (LinearLayout)findViewById(R.id.mapLayout);
-        mapLayout.post(new Runnable()
-        {
 
-            @Override
-            public void run()
-            {
-                generateMap(context);
-                renderMap(context, loadingPlatform, null);
-            }
-        });
 
+        generateMap(context);
+        renderMap(context, loadingPlatform, null);
 
     }
 
@@ -120,19 +114,15 @@ public class FleetStrategyActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        AudioAttributes audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
-        this.soundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(audioAttributes).build();
-        this.onClickSound = this.soundPool.load(this, R.raw.airplane_selection, 1);
-
         MenuMusicHandler.getInstance().start(this);
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        this.soundPool = null;
-        this.onClickSound = 0;
+
 
         String nextActivity = MenuMusicHandler.getInstance().getNextActivity();
 
@@ -156,7 +146,7 @@ public class FleetStrategyActivity extends AppCompatActivity {
     private void generateMap(Context context) {
         int mapRows = Integer.parseInt(context.getString(R.string.MAP_ROWS));
         int mapColumns = Integer.parseInt(context.getString(R.string.MAP_COLUMNS));
-        int width = mapLayout.getMeasuredWidth();
+        int width = airfightDataBase.getLayoutWidth();
         int height = (int)(0.5 * width);
         int square = (int)(((height - 2 * 12 ) / 12));
         int columnIndex = 0;
@@ -242,7 +232,7 @@ public class FleetStrategyActivity extends AppCompatActivity {
                 if(airplanes != null) {
                     for(Airplane airplane: airplanes) {
                         if(airplane.isPartOfAirplane(rowIndex, columnIndex)){
-                            tv.setBackground(FuselageSingleton.getInstance().getAirplaneFuselageDrawable(airfightDataBase.getFuselageId()));
+                            tv.setBackground(FuselageSingleton.getInstance().getAirplaneFuselageDrawable(fuselageId));
 
                             if (selectedAirplaneId == airplane.getAirplaneId()) {
                                 tv.startAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_in));
@@ -266,7 +256,7 @@ public class FleetStrategyActivity extends AppCompatActivity {
         int newAirplaneIdIcon = newAirplaneId - 1;
         int airplanesFleet = Integer.parseInt(context.getString(R.string.AIRPLANES_FLEET));
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         if( newAirplaneId <= airplanesFleet) {
             if(isLoadPlatformEmpty) {
@@ -291,7 +281,7 @@ public class FleetStrategyActivity extends AppCompatActivity {
 
     public void onClickLeft(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         if(!airplanes.isEmpty()) {
 
@@ -318,7 +308,7 @@ public class FleetStrategyActivity extends AppCompatActivity {
 
     public void onClickRight(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         if(!airplanes.isEmpty()) {
 
@@ -345,7 +335,7 @@ public class FleetStrategyActivity extends AppCompatActivity {
 
     public void onClickUp(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         if(!airplanes.isEmpty()) {
 
@@ -372,7 +362,7 @@ public class FleetStrategyActivity extends AppCompatActivity {
 
     public void onClickDown(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         if(!airplanes.isEmpty()) {
 
@@ -399,7 +389,7 @@ public class FleetStrategyActivity extends AppCompatActivity {
 
     public void onClickAirplaneRotation(View view) {
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         if(!airplanes.isEmpty()) {
 
@@ -428,7 +418,8 @@ public class FleetStrategyActivity extends AppCompatActivity {
         int newTag = -1;
         Bitmap newIcon = null;
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         if ( tag > 0 ) {
 
@@ -452,15 +443,18 @@ public class FleetStrategyActivity extends AppCompatActivity {
 
         int airplanesFleet = Integer.parseInt(context.getString(R.string.AIRPLANES_FLEET));
 
-        this.soundPool.play(this.onClickSound, 1, 1, 0, 0, 1);
+        SoundPoolSingleton.getInstance(context).playOnClickSound();
 
         if(airplanes.size() == airplanesFleet) {
 
             MyAirplanesSingleton.getInstance().saveMyFleet(airplanes);
 
+            airfightDataBase.updateBattleStatus("BATTLE_ON_GOING");
+
             MenuMusicHandler.getInstance().setNextActivity(getResources().getString(R.string.ENEMY_FIELD_ACTIVITY));
             Intent intent = new Intent(FleetStrategyActivity.this, EnemyFieldActivity.class);
             startActivity(intent);
+            finish();
 
         } else {
             Toast.makeText(getBaseContext(), "Three airplanes are required for the fleet!", Toast.LENGTH_LONG).show();

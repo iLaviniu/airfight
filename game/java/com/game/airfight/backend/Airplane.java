@@ -93,6 +93,14 @@ public class Airplane {
         tail = new Element(new Coordinate(8, 17), new Coordinate(8, 19));
     }
 
+    public void buildActivityAirplaneStartPosition() {
+        head = new Element(new Coordinate(7, 13), new Coordinate(7, 13));
+        body = new Element(new Coordinate(8, 13), new Coordinate(10, 13));
+        leftWing = new Element(new Coordinate(8, 11), new Coordinate(8, 12));
+        rightWing = new Element(new Coordinate(8, 14), new Coordinate(8, 15));
+        tail = new Element(new Coordinate(11, 12), new Coordinate(11, 14));
+    }
+
     public void flyReset() {
 
         head = new Element(new Coordinate(15, 20), new Coordinate(15, 20));
@@ -116,6 +124,22 @@ public class Airplane {
         leftWing.moveElementDown();
         rightWing.moveElementDown();
         tail.moveElementDown();
+    }
+
+    public void flyToRight() {
+        head.moveElementToRight();
+        body.moveElementToRight();
+        leftWing.moveElementToRight();
+        rightWing.moveElementToRight();
+        tail.moveElementToRight();
+    }
+
+    public void flyToLeft() {
+        head.moveElementToLeft();
+        body.moveElementToLeft();
+        leftWing.moveElementToLeft();
+        rightWing.moveElementToLeft();
+        tail.moveElementToLeft();
     }
 
     public void copyAirplane(Element _head, Element _body, Element _leftWing, Element _rightWing, Element _tail) {

@@ -51,4 +51,5 @@ public class MySingleton {
         allEnemyShots = null;
         myHeadsNumber = 0;
     }
+
 }
